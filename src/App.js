@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import QrReader from 'react-qr-scanner';
 import firebase from './firebase';
 import { db } from './firebase';
@@ -14,6 +14,10 @@ function App() {
       fetchUserData(scanResultWebCam);
     }
   }, [scanResultWebCam]);
+
+  useEffect(() => {
+    selectBackCamera();
+  }, []);
 
   const fetchUserData = async (userId) => {
     try {
@@ -41,13 +45,23 @@ function App() {
     }
   };
 
-  const previewStyle = {
-    width: '100%',
-    height: 'auto',
-  };
-
-  const videoConstraints = {
-    facingMode: 'environment', // Utilizar la cámara trasera
+  const selectBackCamera = () => {
+    navigator.mediaDevices.enumerateDevices()
+      .then((devices) => {
+        const videoDevices = devices.filter(device => device.kind === 'videoinput');
+        const backCamera = videoDevices.find(device => device.label.toLowerCase().includes('back'));
+        if (backCamera) {
+          const constraints = {
+            video: { deviceId: backCamera.deviceId },
+          };
+          qrRef.current.openImageDialog(); // Cerrar el diálogo de la cámara actual antes de cambiar a la cámara trasera
+          qrRef.current.pause(); // Pausar la reproducción de video antes de cambiar a la cámara trasera
+          qrRef.current.openVideoInputDevice(backCamera.deviceId, constraints); // Abrir la cámara trasera
+        }
+      })
+      .catch(error => {
+        console.log('Error al obtener los dispositivos de video:', error);
+      });
   };
 
   return (
@@ -57,11 +71,10 @@ function App() {
         <h3>Escanear Código QR</h3>
         <QrReader
           delay={300}
-          style={previewStyle}
+          style={{ width: '100%' }}
           onError={handleErrorWebCam}
           onScan={handleScanWebCam}
           ref={qrRef}
-          facingMode="rear"
         />
         <h3>Resultado: {scanResultWebCam}</h3>
         {userData && (
