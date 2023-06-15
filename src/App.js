@@ -1,17 +1,13 @@
-<<<<<<< HEAD
-import React, { useState, useEffect } from 'react';
-import QrCodeReader from 'jsqr';
-
-function App() {
-  const [scanResultWebCam, setScanResultWebCam] = useState('');
-=======
-import React, { useState, useEffect, useRef } from 'react';
-import QrReader from 'react-qr-scanner';
+import React, { useState, useRef, useEffect } from 'react';
+import QrReader from 'qrreader';
 import firebase from './firebase';
 import { db } from './firebase';
 import './App.css';
 
 function App() {
+  const [text, setText] = useState('');
+  const [imageUrl, setImageUrl] = useState('');
+  const [scanResultFile, setScanResultFile] = useState('');
   const [scanResultWebCam, setScanResultWebCam] = useState('');
   const [userData, setUserData] = useState(null);
   const qrRef = useRef(null);
@@ -22,88 +18,105 @@ function App() {
     }
   }, [scanResultWebCam]);
 
-  useEffect(() => {
-    selectBackCamera();
-  }, []);
->>>>>>> 4148ae004fd762a490e05ba65cb355fd0509bcca
+  const fetchUserData = async (userId) => {
+    try {
+      const userRef = db.collection('users').doc(userId);
+      const userDoc = await userRef.get();
 
-  useEffect(() => {
-    startQrCodeScanner();
-  }, []);
+      if (userDoc.exists) {
+        const userData = userDoc.data();
+        setUserData(userData);
+      } else {
+        console.log('El usuario no existe');
+      }
+    } catch (error) {
+      console.log('Error al obtener los datos del usuario:', error);
+    }
+  };
 
-  const startQrCodeScanner = () => {
-    const constraints = { video: { facingMode: 'environment' } };
+  const handleErrorWebCam = (error) => {
+    console.log(error);
+  };
 
-    navigator.mediaDevices.getUserMedia(constraints)
-      .then((stream) => {
-        const video = document.createElement('video');
-        video.srcObject = stream;
-        video.play();
-
-<<<<<<< HEAD
-        const canvasElement = document.createElement('canvas');
-        const canvas = canvasElement.getContext('2d');
-
-        const scanQrCode = () => {
-          canvas.drawImage(video, 0, 0, canvasElement.width, canvasElement.height);
-          const imageData = canvas.getImageData(0, 0, canvasElement.width, canvasElement.height);
-          const code = QrCodeReader(imageData.data, imageData.width, imageData.height);
-
-          if (code) {
-            setScanResultWebCam(code.data);
-          }
-
-          requestAnimationFrame(scanQrCode);
-        };
-
-        requestAnimationFrame(scanQrCode);
-      })
-      .catch((error) => {
-        console.log('Error al acceder a la cámara:', error);
-      });
-=======
   const handleScanWebCam = (result) => {
     if (result) {
-      setScanResultWebCam(result?.text || '');
+      setScanResultWebCam(result);
     }
->>>>>>> 4148ae004fd762a490e05ba65cb355fd0509bcca
   };
 
-  const selectBackCamera = () => {
-    navigator.mediaDevices.enumerateDevices()
-      .then((devices) => {
-        const videoDevices = devices.filter(device => device.kind === 'videoinput');
-        const backCamera = videoDevices.find(device => device.label.toLowerCase().includes('back'));
-        if (backCamera) {
-          const constraints = {
-            video: { deviceId: backCamera.deviceId },
-          };
-          qrRef.current.openImageDialog(); // Cerrar el diálogo de la cámara actual antes de cambiar a la cámara trasera
-          qrRef.current.pause(); // Pausar la reproducción de video antes de cambiar a la cámara trasera
-          qrRef.current.openVideoInputDevice(backCamera.deviceId, constraints); // Abrir la cámara trasera
-        }
+  const habilitar = () => {
+    var habilitar = document.getElementById("habilitar");
+
+    // si se presiona el boton habilitar se agregara el estado de habilitado a la base de datos
+    habilitar.addEventListener("click", function () {
+      db.collection("users").doc(scanResultWebCam).update({
+        estado: "Habilitado"
       })
-      .catch(error => {
-        console.log('Error al obtener los dispositivos de video:', error);
+        .then(function () {
+          console.log("Document successfully updated!");
+          alert("Usuario habilitado");
+        })
+        .catch(function (error) {
+          // The document probably doesn't exist.
+          console.error("Error updating document: ", error);
+          alert("Error al habilitar usuario");
+        });
+    });
+  }
+
+    const deshabilitar = () => {
+      var deshabilitar = document.getElementById("deshabilitar");
+
+      // si se presiona el boton deshabilitar se cambiara el estado de habilitado a deshabilitado en la base de datos
+      deshabilitar.addEventListener("click", function () {
+        db.collection("users").doc(scanResultWebCam).update({
+          estado: "Deshabilitado"
+        })
+          .then(function () {
+            console.log("Document successfully updated!");
+            alert("Usuario deshabilitado");
+          })
+          .catch(function (error) {
+            // The document probably doesn't exist.
+            console.error("Error updating document: ", error);
+            alert("Error al deshabilitar usuario");
+          });
       });
-  };
+    }
+
 
   return (
-    <div>
-      <h2>Kishop - Confirmar identidad</h2>
-      <div className="qr-scanner">
-        <h3>Escanear Código QR</h3>
-<<<<<<< HEAD
-=======
-        <QrReader
-          delay={300}
-          style={{ width: '100%' }}
-          onError={handleErrorWebCam}
-          onScan={handleScanWebCam}
-          ref={qrRef}
-        />
->>>>>>> 4148ae004fd762a490e05ba65cb355fd0509bcca
-        <h3>Resultado: {scanResultWebCam}</h3>
+    <div className="container">
+      <div className="card">
+        <h2 className="title">Kishop - Confirmar identidad</h2>
+        <div className="card-content">
+          <div className="qr-scanner">
+            <h3>Escanear Codigo QR</h3>
+            <QrReader
+              delay={300}
+              style={{ width: '100%' }}
+              onError={handleErrorWebCam}
+              onScan={handleScanWebCam}
+            />
+            <h3>Resultado: {scanResultWebCam}</h3>
+          </div>
+          {userData && (
+            <div className="user-card">
+              <img className="profile-img" src={userData.imageUrl} alt="Imagen de perfil" />
+              <div className="user-data">
+                <p><strong>DNI:</strong> {userData.dni}</p>
+                <p><strong>Nombre:</strong> {userData.nombre}</p>
+                <p><strong>Apellido:</strong> {userData.apellido}</p>
+                <p><strong>Cargo:</strong> {userData.cargo}</p>
+                <p><strong>Correo:</strong> {userData.correo}</p>
+                <p><strong>Función:</strong> {userData.funcion}</p>
+                <p><strong>Código de Seguridad:</strong> ********</p>
+              </div>
+              <button onClick={habilitar()} id="habilitar" className="btnhabilitar">Habilitar</button>
+              <button onClick={deshabilitar()} id="deshabilitar" className="btnrechazar">Deshabilitar</button>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
