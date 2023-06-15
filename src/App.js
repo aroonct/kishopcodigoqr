@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import QrReader from 'react-qr-scanner';
 import firebase from './firebase';
 import { db } from './firebase';
@@ -8,7 +8,12 @@ function App() {
   const [scanResultWebCam, setScanResultWebCam] = useState('');
   const [userData, setUserData] = useState(null);
   const qrRef = useRef(null);
-  const [qrKey, setQrKey] = useState(0); // Clave dinámica para reinicializar el componente QrReader
+
+  useEffect(() => {
+    if (scanResultWebCam) {
+      fetchUserData(scanResultWebCam);
+    }
+  }, [scanResultWebCam]);
 
   const fetchUserData = async (userId) => {
     try {
@@ -33,9 +38,16 @@ function App() {
   const handleScanWebCam = (result) => {
     if (result) {
       setScanResultWebCam(result?.text || '');
-      fetchUserData(result?.text || '');
-      setQrKey(prevKey => prevKey + 1); // Actualizar la clave para reinicializar el componente QrReader
     }
+  };
+
+  const previewStyle = {
+    width: '100%',
+    height: 'auto',
+  };
+
+  const videoConstraints = {
+    facingMode: 'environment', // Utilizar la cámara trasera
   };
 
   return (
@@ -44,12 +56,12 @@ function App() {
       <div className="qr-scanner">
         <h3>Escanear Código QR</h3>
         <QrReader
-          key={qrKey} // Clave dinámica para reinicializar el componente QrReader
           delay={300}
-          style={{ width: '100%' }}
+          style={previewStyle}
           onError={handleErrorWebCam}
           onScan={handleScanWebCam}
           ref={qrRef}
+          videoConstraints={videoConstraints}
         />
         <h3>Resultado: {scanResultWebCam}</h3>
         {userData && (
