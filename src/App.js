@@ -112,11 +112,12 @@ function App() {
                 <p><strong>Función:</strong> {userData.funcion}</p>
                 <p><strong>Código de Seguridad:</strong> ********</p>
               </div>
-              <button onClick={habilitar()} id="habilitar" className="btnhabilitar">Habilitar</button>
-              <button onClick={deshabilitar()} id="deshabilitar" className="btnrechazar">Deshabilitar</button>
+              
             </div>
           )}
         </div>
+        <button onClick={habilitar()} id="habilitar" className="btnhabilitar">Habilitar</button>
+              <button onClick={deshabilitar()} id="deshabilitar" className="btnrechazar">Deshabilitar</button>
       </div>
     </div>
   );
