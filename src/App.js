@@ -61,7 +61,7 @@ function App() {
           onError={handleErrorWebCam}
           onScan={handleScanWebCam}
           ref={qrRef}
-          videoConstraints={videoConstraints}
+          facingMode="rear"
         />
         <h3>Resultado: {scanResultWebCam}</h3>
         {userData && (
