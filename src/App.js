@@ -1,69 +1,50 @@
-import React, { useState, useRef } from 'react';
-import QrReader from 'react-qr-scanner';
-import firebase from './firebase';
-import { db } from './firebase';
-import './App.css';
+import React, { useState, useEffect } from 'react';
+import QrCodeReader from 'jsqr';
 
 function App() {
   const [scanResultWebCam, setScanResultWebCam] = useState('');
-  const [userData, setUserData] = useState(null);
-  const qrRef = useRef(null);
-  const [qrKey, setQrKey] = useState(0); // Clave dinámica para reinicializar el componente QrReader
 
-  const fetchUserData = async (userId) => {
-    try {
-      const userRef = db.collection('users').doc(userId);
-      const userDoc = await userRef.get();
+  useEffect(() => {
+    startQrCodeScanner();
+  }, []);
 
-      if (userDoc.exists) {
-        const userData = userDoc.data();
-        setUserData(userData);
-      } else {
-        console.log('El usuario no existe');
-      }
-    } catch (error) {
-      console.log('Error al obtener los datos del usuario:', error);
-    }
-  };
+  const startQrCodeScanner = () => {
+    const constraints = { video: { facingMode: 'environment' } };
 
-  const handleErrorWebCam = (error) => {
-    console.log(error);
-  };
+    navigator.mediaDevices.getUserMedia(constraints)
+      .then((stream) => {
+        const video = document.createElement('video');
+        video.srcObject = stream;
+        video.play();
 
-  const handleScanWebCam = (result) => {
-    if (result) {
-      setScanResultWebCam(result?.text || '');
-      fetchUserData(result?.text || '');
-      setQrKey(prevKey => prevKey + 1); // Actualizar la clave para reinicializar el componente QrReader
-    }
+        const canvasElement = document.createElement('canvas');
+        const canvas = canvasElement.getContext('2d');
+
+        const scanQrCode = () => {
+          canvas.drawImage(video, 0, 0, canvasElement.width, canvasElement.height);
+          const imageData = canvas.getImageData(0, 0, canvasElement.width, canvasElement.height);
+          const code = QrCodeReader(imageData.data, imageData.width, imageData.height);
+
+          if (code) {
+            setScanResultWebCam(code.data);
+          }
+
+          requestAnimationFrame(scanQrCode);
+        };
+
+        requestAnimationFrame(scanQrCode);
+      })
+      .catch((error) => {
+        console.log('Error al acceder a la cámara:', error);
+      });
   };
 
   return (
-    <div className="container">
+    <div>
       <h2>Kishop - Confirmar identidad</h2>
       <div className="qr-scanner">
         <h3>Escanear Código QR</h3>
-        <QrReader
-          key={qrKey} // Clave dinámica para reinicializar el componente QrReader
-          delay={300}
-          style={{ width: '100%' }}
-          onError={handleErrorWebCam}
-          onScan={handleScanWebCam}
-          ref={qrRef}
-        />
         <h3>Resultado: {scanResultWebCam}</h3>
-        {userData && (
-          <div className="user-data">
-            <img className="profile-image" src={userData.imageUrl} alt="Imagen de perfil" />
-            <p>DNI: {userData.dni}</p>
-            <p>Nombre: {userData.nombre}</p>
-            <p>Apellido: {userData.apellido}</p>
-            <p>Cargo: {userData.cargo}</p>
-            <p>Correo: {userData.correo}</p>
-            <p>Función: {userData.funcion}</p>
-            <p>Código de Seguridad: {userData.codigoseguridad}</p>
-          </div>
-        )}
       </div>
     </div>
   );
