@@ -115,7 +115,7 @@ function App() {
             <p>Cargo: {userData.cargo}</p>
             <p>Correo: {userData.correo}</p>
             <p>Función: {userData.funcion}</p>
-            <p>Código de Seguridad: {userData.codigoseguridad}</p>
+            <p>Código de Seguridad: ******</p>
             <p>Estado: {userData.estado}</p>
             <button className='btnhb hab' onClick={handleEnableUser}>Habilitar</button>
             <button className='btnhb desh' onClick={handleDisableUser}>Deshabilitar</button>
