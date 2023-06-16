@@ -46,10 +46,11 @@ function App() {
   };
 
   const selectBackCamera = () => {
-    navigator.mediaDevices.enumerateDevices()
+    navigator.mediaDevices
+      .enumerateDevices()
       .then((devices) => {
-        const videoDevices = devices.filter(device => device.kind === 'videoinput');
-        const backCamera = videoDevices.find(device => device.label.toLowerCase().includes('back'));
+        const videoDevices = devices.filter((device) => device.kind === 'videoinput');
+        const backCamera = videoDevices.find((device) => device.label.toLowerCase().includes('back'));
         if (backCamera) {
           const constraints = {
             video: { deviceId: backCamera.deviceId },
@@ -59,9 +60,37 @@ function App() {
           qrRef.current.openVideoInputDevice(backCamera.deviceId, constraints); // Abrir la cámara trasera
         }
       })
-      .catch(error => {
+      .catch((error) => {
         console.log('Error al obtener los dispositivos de video:', error);
       });
+  };
+
+  const handleEnableUser = () => {
+    if (userData) {
+      const userRef = db.collection('users').doc(scanResultWebCam);
+      userRef.update({ estado: 'habilitado' })
+        .then(() => {
+          console.log('Usuario habilitado');
+          setUserData({ ...userData, estado: 'habilitado' });
+        })
+        .catch((error) => {
+          console.log('Error al habilitar usuario:', error);
+        });
+    }
+  };
+
+  const handleDisableUser = () => {
+    if (userData) {
+      const userRef = db.collection('users').doc(scanResultWebCam);
+      userRef.update({ estado: 'deshabilitado' })
+        .then(() => {
+          console.log('Usuario deshabilitado');
+          setUserData({ ...userData, estado: 'deshabilitado' });
+        })
+        .catch((error) => {
+          console.log('Error al deshabilitar usuario:', error);
+        });
+    }
   };
 
   return (
@@ -87,6 +116,9 @@ function App() {
             <p>Correo: {userData.correo}</p>
             <p>Función: {userData.funcion}</p>
             <p>Código de Seguridad: {userData.codigoseguridad}</p>
+            <p>Estado: {userData.estado}</p>
+            <button onClick={handleEnableUser}>Habilitar</button>
+            <button onClick={handleDisableUser}>Deshabilitar</button>
           </div>
         )}
       </div>
