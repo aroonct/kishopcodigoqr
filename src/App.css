@@ -99,6 +99,28 @@
   margin: 5px 0;
 }
 
+.btnhb{
+  color: #fff;
+  padding: 10px;
+  border: none;
+  cursor: pointer;
+  margin: 10px 0;
+  width: 100%;
+  max-width: 200px;
+  text-align: center;
+  text-decoration: none;
+  font-size: 16px;
+}
+
+.desh{
+  background-color: #ad0606;
+}
+
+.hab{
+  background-color: #43971c;
+}
+
+
 @media only screen and (max-width: 600px) {
   .container {
     padding: 10px;
