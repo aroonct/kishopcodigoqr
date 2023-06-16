@@ -117,8 +117,8 @@ function App() {
             <p>Función: {userData.funcion}</p>
             <p>Código de Seguridad: {userData.codigoseguridad}</p>
             <p>Estado: {userData.estado}</p>
-            <button onClick={handleEnableUser}>Habilitar</button>
-            <button onClick={handleDisableUser}>Deshabilitar</button>
+            <button className='btnhb hab' onClick={handleEnableUser}>Habilitar</button>
+            <button className='btnhb desh' onClick={handleDisableUser}>Deshabilitar</button>
           </div>
         )}
       </div>
